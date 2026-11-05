@@ -6,7 +6,7 @@ An interactive 3D virtual tour and architectural preview for ARISE Palm Resort i
 
 - **Interactive 3D Scene**: Explore the resort layout, arrival gate, and golf clubhouse in real time.
 - **First-Person Walk Mode**: Walk through the grounds and inspect the architectural spaces up close.
-- **Palm Circuit Mini Golf**: Three playable holes with rail rebounds, sand, water penalties, predicted shot paths, stars, scorecards and a saved personal best.
+- **Open-green golf**: Three tee positions on the original resort grass, with the existing bunker, shot previews, scoring and a saved personal best.
 - **Photo Gallery**: High-resolution rendered gallery shots and architectural views.
 - **Lighting Controls**: Switch between daytime and sunset atmospheric lighting presets.
 
@@ -53,15 +53,17 @@ npm run preview
 ```
 
 
-## Palm Circuit controls
+## Golf controls
 
-Drag back anywhere on the course and release to putt, or use the power slider and Putt button. Arrow keys adjust aim and power; hold Space to charge and release to shoot. Escape returns to the resort. A low player-side camera and overhead View hole camera are available, along with sound and round restart controls. A cancelled pointer gesture or loss of window focus cancels charging.
+Drag the scene to orbit the camera. Shift-drag or middle-drag pans; the wheel zooms. Camera gestures never change shot aim or power and never launch the ball. Use the aim arrows and power slider, then press Putt. Keyboard arrows adjust aim/power; hold Space and release to putt. Escape exits golf. View hole toggles the overhead camera.
 
-The three holes share one course definition with the renderer and a fixed 120 Hz physics simulation. Rail restitution, obstacle collisions, sand friction, speed-sensitive cup capture and water penalties are covered by `npm test`. Progress and best scores are stored on this browser only; storage failure does not prevent play. The golf challenge is a stylized game, not a surveyed resort course.
+The original grass and bunker remain visible during play. There is no raised course, boundary rail, artificial wall or lagoon. Balls cross the former course edges freely; rough grass and the existing sand slow them. Shots far outside the practice grounds incur a penalty and return to the previous lie.
+
+Run `npm test` for physics and interaction checks, including orbit/pan without shooting, former-boundary traversal, shot timing and cleanup. Best scores are stored on this browser only.
 
 ## Replica-preserving presentation
 
-The original `public/models/resort-architecture.glb`, photo references, building-generation sources and resort landscaping are unchanged. Golf is a temporary gameplay layer removed on exit. It is not a claim that a three-hole miniature course exists on the physical property.
+The original `public/models/resort-architecture.glb`, photo references, building-generation sources and resort landscaping are unchanged. The golfer, ball and practice markers are a temporary gameplay layer removed on exit; the underlying landscape stays unchanged.
 
 Golf opens with a low player-side camera inspired by the supplied screenshot, with an original procedural Black golfer, putting stance, club wind-up and follow-through. This is a stylized mesh character, not a photoreal scanned person. View hole switches to an overhead camera.
 

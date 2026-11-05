@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
+import { COURSES } from '../src/golf-physics.js';
 import { initGolfMode } from '../src/golf.js';
 class Element extends EventTarget {
   constructor(){super();this.style={};this.attributes={};this.children=[];this.value='';this.hidden=false;}
@@ -8,6 +9,9 @@ class Element extends EventTarget {
   getAttribute(k){return this.attributes[k]??null;}
   removeAttribute(k){delete this.attributes[k];}
   focus(){}
+  setPointerCapture(id){this.capture=id;}
+  hasPointerCapture(id){return this.capture===id;}
+  releasePointerCapture(){this.capture=null;}
   append(node){this.children.push(node);}
 }
 test('player camera, timed club strike, hole completion and exit cleanup',()=>{
@@ -22,9 +26,21 @@ test('player camera, timed club strike, hole completion and exit cleanup',()=>{
   const exit=initGolfMode(app)();
   assert.ok(camera.position.y<5,'default view is low beside the player');
   assert.ok(scene.getObjectByName('Golfer'));
+  frame(1/120);
+  const initial=[...window.__GOLF__.ball],powerBefore=window.__GOLF__.power,cameraBefore=camera.position.clone();
+  function pointer(type,props={}){const e=new Event(type,{cancelable:true});Object.assign(e,{pointerId:1,button:0,clientX:100,clientY:100,...props});canvas.dispatchEvent(e);}
+  pointer('pointerdown');pointer('pointermove',{clientX:240,clientY:140});frame(.1);pointer('pointerup');frame(.1);
+  assert.equal(window.__GOLF__.state,'ready');assert.equal(window.__GOLF__.strokes,0);
+  assert.deepEqual(window.__GOLF__.ball,initial);assert.equal(window.__GOLF__.power,powerBefore);
+  assert.ok(camera.position.distanceTo(cameraBefore)>.5,'drag changes only camera');
+  const beforePan=camera.position.clone();
+  pointer('pointerdown',{shiftKey:true});pointer('pointermove',{clientX:190});frame(.1);pointer('pointerup');frame(.1);
+  assert.ok(camera.position.distanceTo(beforePan)>.1);assert.equal(window.__GOLF__.strokes,0);
+  pointer('pointerdown');pointer('pointercancel');frame(.1);assert.equal(window.__GOLF__.state,'ready');
+
   doc.getElementById('golf-camera').dispatchEvent(new Event('click'));frame(1);
   assert.ok(camera.position.y>20,'View hole changes to overhead camera');
-  const power=doc.getElementById('golf-power-input');power.value=Math.sqrt(2*1.65*14)/12*100;power.dispatchEvent(new Event('input'));
+  const power=doc.getElementById('golf-power-input');power.value=Math.sqrt(2*1.65*Math.hypot(COURSES[0].tee[0]-COURSES[0].pin[0],COURSES[0].tee[1]-COURSES[0].pin[1]))/12*100;power.dispatchEvent(new Event('input'));
   doc.getElementById('golf-swing').dispatchEvent(new Event('click'));frame(.1);
   assert.equal(window.__GOLF__.state,'swing');assert.equal(window.__GOLF__.strokes,0);
   for(let i=0;i<1000;i++)frame(1/120);

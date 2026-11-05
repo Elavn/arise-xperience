@@ -27,7 +27,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="M13 8.5 10 11l-2.5 1M13 8.5l1.5 3 3 2M13 8.5 12 13l-1 4-3 4.5M12 17l2.5 2 1.5 4"/></svg>
           <span>Walk</span>
         </button>
-        <button class="tool-button" id="golf-toggle" aria-pressed="false" aria-label="Play the three-hole mini-golf challenge">
+        <button class="tool-button" id="golf-toggle" aria-pressed="false" aria-label="Play golf on the open practice green">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4m0 0 8 2.5L6 9"/><circle cx="18" cy="19" r="1.6"/></svg>
           <span>Play golf</span>
         </button>
@@ -109,12 +109,12 @@
         <span id="golf-strokes"></span><span id="golf-distance"></span>
         <div class="golf-top-actions"><button id="golf-mute" aria-pressed="false">Sound on</button><button id="golf-exit">Exit golf ↗</button></div>
       </div>
-      <aside class="golf-round"><span class="golf-course">THE PALM CIRCUIT</span><div id="golf-scorecard" aria-label="Round scorecard"></div><p>Three holes. One personal best.</p><button id="golf-camera">View hole</button><button id="golf-restart">Restart round</button></aside>
+      <aside class="golf-round"><span class="golf-course">PRACTICE GREEN</span><div id="golf-scorecard" aria-label="Round scorecard"></div><p>Three holes. One personal best.</p><button id="golf-camera">View hole</button><button id="golf-restart">Restart round</button></aside>
       <div class="golf-banner" id="golf-banner" role="status" hidden></div>
       <div class="golf-bottom">
         <p id="golf-status" role="status"></p>
         <div class="golf-shot-controls"><button id="golf-aim-left" aria-label="Aim left">↶</button><label for="golf-power-input">SHOT POWER <output id="golf-power-value">60%</output><input id="golf-power-input" type="range" min="2" max="100" value="60"></label><button id="golf-aim-right" aria-label="Aim right">↷</button><button id="golf-swing">Putt →</button></div>
-        <div class="golf-hint">Drag back on the course and release to putt · or adjust power and press Putt<br>Keyboard: ← → aim · ↑ ↓ power · hold Space and release to putt</div>
+        <div class="golf-hint">Drag to orbit; Shift-drag to pan; scroll to zoom · or adjust power and press Putt<br>Keyboard: ← → aim · ↑ ↓ power · hold Space and release to putt</div>
       </div>
     </div>
 
