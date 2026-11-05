@@ -259,17 +259,7 @@ body[data-mode="golf"] #canvas-host { touch-action: none; }
 .golf-hint { font-size: 10px; line-height: 1.6; }
 #golf-hud button:disabled { opacity: .45; cursor: default; }
 .golf-result-stars { color: #ffc078!important; font-size: 30px!important; letter-spacing: 8px; }
-#passport { position: absolute; z-index: 5; top: 110px; right: 28px; width: 220px; padding: 16px; background: #12392fe8; border: 1px solid #ffffff30; border-radius: 10px; }
-#passport > span { font-size: 9px; letter-spacing: .15em; color: #eab77b; }
-#passport strong { display: block; margin: 8px 0 12px; font-size: 14px; }
-#passport-stamps { display: flex; flex-wrap: wrap; gap: 7px; font-size: 10px; color: #b1c5bb; }
-#passport-stamps span { padding: 5px; border: 1px solid #ffffff20; border-radius: 4px; }
-#passport-stamps .earned { color: #ffcf8a; border-color: #ffcf8a70; }
-body[data-mode="golf"] #passport, body[data-mode="walk"] #passport { display: none; }
 @media(max-width:760px) {
-  #passport { top: 90px; right: 16px; width: 170px; padding: 12px; }
-  #passport-stamps { display: none; }
-  #passport strong { margin-bottom: 0; font-size: 12px; }
   .golf-top { top: 12px; left: 12px; right: 12px; padding: 12px; gap: 8px; flex-wrap: wrap; }
   .golf-course { display: inline; font-size: 9px; }
   #golf-course-name { font-size: 20px; }
@@ -292,3 +282,59 @@ body[data-mode="golf"] #passport, body[data-mode="walk"] #passport { display: no
   .golf-round p, .golf-round > .golf-course, .golf-hint { display:none; }
   .golf-bottom { bottom: 8px; width: min(500px,65vw); left: auto; right: 12px; transform: none; }
 }
+
+/* Preserve the photographic resort replica; keep its introduction temporary. */
+.intro-panel, .location-chip, .scene-shade { transition: opacity 1.2s ease-out, visibility 1.2s; }
+body.scene-quiet .intro-panel, body.scene-quiet .location-chip { opacity: 0; visibility: hidden; pointer-events: none; }
+body.scene-quiet .scene-shade { opacity: .25; }
+#scene-info { font-size: 17px; }
+#scene-info span { font-size: 12px; }
+/* Player view: keep the centre of the course free, like the supplied reference. */
+.golf-top { left: 16px; right: auto; top: 16px; max-width: calc(100vw - 32px); padding: 10px 14px; border-radius: 12px; gap: 14px; background: #14251ded; }
+#golf-course-name { font-family: inherit; font-size: 16px; font-weight: 700; }
+#golf-hole-label { font-size: 9px; letter-spacing: .08em; }
+#golf-strokes { font-family: inherit; font-size: 12px; }
+.golf-top-actions { position: fixed; left: 16px; bottom: 16px; }
+.golf-top-actions button { background: #14251ded; border-radius: 22px; }
+.golf-round { left: 210px; top: auto; bottom: 16px; width: auto; border: 0; background: none; padding: 0; display: flex; gap: 6px; }
+.golf-round > .golf-course, .golf-round p, #golf-scorecard { display: none; }
+.golf-round button { width: auto; margin: 0; border-radius: 22px; background: #14251ded; }
+.golf-bottom { top: 25%; right: 18px; left: auto; bottom: auto; transform: none; width: 78px; }
+.golf-shot-controls { flex-direction: column; gap: 5px; background: #14251dd9; padding: 9px; border-radius: 30px; }
+.golf-shot-controls label { flex: none; display: flex; flex-direction: column; align-items: center; font-size: 8px; letter-spacing: .03em; }
+#golf-power-value { float: none; margin-top: 5px; font-size: 12px; }
+#golf-power-input { writing-mode: vertical-lr; direction: rtl; width: 26px; height: clamp(70px,20vh,190px); margin: 8px 0; }
+.golf-shot-controls > button { flex: none; width: 44px; height: 34px; min-height: 34px; font-size: 21px; border: 0; }
+.golf-shot-controls #golf-swing { flex: none; width: 58px; min-height: 40px; font-size: 12px; border-radius: 20px; }
+#golf-status { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 160px); background: #14251dbb; animation: golf-tip-away 7s forwards; }
+.golf-hint { display: none; }
+@keyframes golf-tip-away { 0%,65% {opacity:1;} 100% {opacity:0;visibility:hidden;} }
+@media(max-width:760px) {
+  .topbar { padding: 12px; }
+  .topbar .brand-mark, .topbar .brand-copy > span { display: none; }
+  .top-actions { gap: 2px; }
+  .top-actions .tool-button { width: 40px; min-width: 40px; }
+  .golf-top { flex-wrap: wrap; gap: 7px 12px; max-width: calc(100vw - 24px); top: 12px; left: 12px; }
+  #golf-course-name { font-size: 14px; }
+  .golf-top > div:first-child { width: 100%; }
+  .golf-top-actions { left: 12px; bottom: max(12px,env(safe-area-inset-bottom)); }
+  .golf-top-actions button { min-height: 40px; }
+  .golf-round { left: 164px; bottom: max(12px,env(safe-area-inset-bottom)); gap: 4px; }
+  .golf-round button { min-height: 40px; font-size: 10px; padding: 6px; }
+  .golf-bottom { right: 10px; top: 29%; width: 65px; }
+  .golf-shot-controls { padding: 5px; }
+  #golf-status { top: 110px; font-size: 10px; }
+}
+@media(max-height:550px) {
+  .golf-bottom { top: 12px; right: 14px; width: 65px; }
+  .golf-shot-controls { gap: 0; padding: 5px; }
+  #golf-power-input { height: 70px; }
+  .golf-round { top: auto; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .intro-panel, .location-chip, .scene-shade { transition: none; }
+  #golf-status { animation: none; }
+}
+
+/* Fixed game actions remain attached to the viewport. */
+.golf-top { backdrop-filter: none; }

@@ -1,4 +1,4 @@
-import { discover } from './passport.js';
+import { initQuietUI } from './quiet-ui.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -466,7 +466,7 @@ function setMode(next) {
   document.getElementById('golf-toggle').setAttribute('aria-pressed', String(next === 'golf'));
   controls.enabled = next === 'orbit';
   if (next === 'orbit') moveToView(currentView, true);
-  else if (next === 'walk') { discover('walk'); modeCleanup = enterWalkMode(app); }
+  else if (next === 'walk') modeCleanup = enterWalkMode(app);
   else if (next === 'golf') modeCleanup = enterGolfMode(app);
 }
 
@@ -493,7 +493,7 @@ const hotspotElements = [...document.querySelectorAll('[data-hotspot]')];
 function setViewUI(name) {
   const view = VIEWS[name];
   currentView = name;
-  discover(name);
+  window.dispatchEvent(new Event('arise-view-change'));
   document.getElementById('place-kicker').textContent = view.kicker;
   document.getElementById('place-title').innerHTML = view.title;
   document.getElementById('place-description').textContent = view.description;
@@ -723,6 +723,7 @@ async function initialize() {
     loadingScreen.classList.add('loaded');
     hotspotRoot.hidden = false;
     window.__SCENE_READY__ = true;
+    window.dispatchEvent(new Event('arise-scene-ready'));
   } catch (error) {
     console.error('Resort architecture could not be loaded', error);
     loadingScreen.classList.add('loaded');
@@ -746,4 +747,5 @@ document.querySelectorAll('.view-tab, .map-pin, .hotspot').forEach((el) => {
 
 const timeParam = new URLSearchParams(location.search).get('t');
 if (timeParam !== null) window.__seek(timeParam);
+initQuietUI();
 initialize();

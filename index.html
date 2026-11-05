@@ -22,6 +22,7 @@
       </a>
       <div class="location-chip"><span class="status-dot"></span>AKWA IBOM, NIGERIA</div>
       <nav class="top-actions" aria-label="Experience tools">
+        <button class="tool-button" id="scene-info" aria-controls="intro-content" aria-expanded="true" aria-label="Hide resort introduction">ⓘ<span>Info</span></button>
         <button class="tool-button" id="walk-toggle" aria-pressed="false" aria-label="Enter first-person walk mode">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="M13 8.5 10 11l-2.5 1M13 8.5l1.5 3 3 2M13 8.5 12 13l-1 4-3 4.5M12 17l2.5 2 1.5 4"/></svg>
           <span>Walk</span>
@@ -44,8 +45,8 @@
       </nav>
     </header>
 
-    <section class="intro-panel" aria-live="polite">
-      <div class="concept-label">YOUR VIRTUAL RESORT ESCAPE</div>
+    <section class="intro-panel" id="intro-content">
+      <div class="concept-label">CONCEPT 3D PREVIEW</div>
       <p class="place-kicker" id="place-kicker">WELCOME TO AKWA IBOM</p>
       <h1 id="place-title">A tropical escape,<br>before you arrive.</h1>
       <p id="place-description">Explore the arrival gate, distinctive golf clubhouse and landscaped grounds inspired by the resort’s latest reference photos.</p>
@@ -108,7 +109,7 @@
         <span id="golf-strokes"></span><span id="golf-distance"></span>
         <div class="golf-top-actions"><button id="golf-mute" aria-pressed="false">Sound on</button><button id="golf-exit">Exit golf ↗</button></div>
       </div>
-      <aside class="golf-round"><span class="golf-course">THE PALM CIRCUIT</span><div id="golf-scorecard" aria-label="Round scorecard"></div><p>Three holes. One personal best.</p><button id="golf-camera">Follow camera</button><button id="golf-restart">Restart round</button></aside>
+      <aside class="golf-round"><span class="golf-course">THE PALM CIRCUIT</span><div id="golf-scorecard" aria-label="Round scorecard"></div><p>Three holes. One personal best.</p><button id="golf-camera">View hole</button><button id="golf-restart">Restart round</button></aside>
       <div class="golf-banner" id="golf-banner" role="status" hidden></div>
       <div class="golf-bottom">
         <p id="golf-status" role="status"></p>
@@ -123,7 +124,6 @@
       <button id="tour-next">Next stop <span aria-hidden="true">→</span></button>
     </div>
 
-    <aside id="passport" aria-label="Exploration passport"><span>YOUR RESORT PASSPORT</span><strong id="passport-count">0 / 5 discoveries</strong><div id="passport-stamps"></div></aside>
 
     <div id="loading-screen" role="status" aria-live="polite">
       <div class="loading-brand">ARISE <span>PALM RESORT</span></div>

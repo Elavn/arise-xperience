@@ -1,3 +1,4 @@
+import { createGolfer } from './golfer.js';
 import * as THREE from 'three';
 import { COURSES, RADIUS, STEP, newBall, moving, strike, stepBall } from './golf-physics.js';
 
@@ -8,8 +9,10 @@ export function initGolfMode(app) {
   return function enter() {
     let hole = 0, strokes = 0, scores = [], ball = newBall(COURSES[0]);
     let angle = 0, power = 0.6, state = 'ready', accumulator = 0, charge = false;
-    let lastLie = { ...ball }, drag = null, overview = true, audio;
+    let lastLie = { ...ball }, drag = null, overview = false, audio;
     let guideKey = '';
+    let swingTime = 0;
+    const golfer = createGolfer();
     const previousFocus = document.activeElement;
     const oldTabIndex = canvas.getAttribute('tabindex');
     canvas.tabIndex = 0; canvas.focus();
@@ -20,6 +23,7 @@ export function initGolfMode(app) {
     const root = new THREE.Group();
     root.position.set(35, 0.35, -9);
     scene.add(root);
+    root.add(golfer.group);
     let courseGroup, sphere, guide, ring, flag;
     const savedFlag = [scene.getObjectByName('Golf_flagstick'), ...scene.children.filter(o => o.geometry?.type === 'ShapeGeometry' && o.position.x === 33)];
     const flagVisibility = savedFlag.map(o => o?.visible);
@@ -87,7 +91,7 @@ export function initGolfMode(app) {
       guide = new THREE.Line(new THREE.BufferGeometry(),lineMat); guide.frustumCulled=false; guide.renderOrder=5; courseGroup.add(guide);
     }
     function loadHole() {
-      ball = newBall(COURSES[hole]); lastLie={...ball}; strokes=0; state='ready'; charge=false; drag=null; accumulator=0;
+      ball = newBall(COURSES[hole]); lastLie={...ball}; strokes=0; state='ready'; charge=false; drag=null; accumulator=0; swingTime=0;
       el('golf-banner').hidden=true; setPower(0.6); aimAtPin(); buildCourse(); hud();
     }
     function showResult() {
@@ -96,7 +100,7 @@ export function initGolfMode(app) {
       if (complete) {
         if (!best || total<best) best=total;
         try { localStorage.setItem('arise-mini-best',String(best)); } catch { /* optional */ }
-        window.dispatchEvent(new CustomEvent('arise-achievement',{detail:'golf'}));
+
       }
       const stars=strokes<=COURSES[hole].par ? '★★★' : strokes===COURSES[hole].par+1 ? '★★☆' : '★☆☆';
       const banner=el('golf-banner');
@@ -108,7 +112,7 @@ export function initGolfMode(app) {
     }
     function shoot() {
       if(state!=='ready')return;
-      charge=false; drag=null; lastLie={...ball}; strike(ball,angle,power); strokes++; state='rolling'; sound(320); hud('Ball rolling…');
+      charge=false; drag=null; lastLie={...ball}; swingTime=0; state='swing'; hud('');
     }
     function cancel() { charge=false; drag=null; if(state==='ready')hud(); }
     function updateGuide() {
@@ -130,11 +134,12 @@ export function initGolfMode(app) {
       ray.setFromCamera(new THREE.Vector2((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1),camera);
       const point=ray.ray.intersectPlane(plane,new THREE.Vector3()); return point?root.worldToLocal(point):null;
     }
+    el('golf-camera').textContent='View hole';
     el('golf-hud').hidden=false; el('control-hint').hidden=true;
     el('golf-mute').setAttribute('aria-pressed',String(muted)); el('golf-mute').textContent=muted?'Sound off':'Sound on';
     on(el('golf-mute'),'click',()=>{muted=!muted;el('golf-mute').setAttribute('aria-pressed',String(muted));el('golf-mute').textContent=muted?'Sound off':'Sound on';try{localStorage.setItem('arise-golf-mute',muted?'1':'0');}catch{} });
     on(el('golf-exit'),'click',()=>app.setMode('orbit'));
-    on(el('golf-camera'),'click',()=>{overview=!overview;el('golf-camera').textContent=overview?'Follow camera':'Course camera';});
+    on(el('golf-camera'),'click',()=>{overview=!overview;el('golf-camera').textContent=overview?'Player view':'View hole';});
     on(el('golf-restart'),'click',()=>{hole=0;scores=[];loadHole();});
     on(el('golf-power-input'),'input',e=>setPower(Number(e.target.value)/100));
     on(el('golf-swing'),'click',shoot);
@@ -160,12 +165,30 @@ export function initGolfMode(app) {
     function cameraFrame(dt, instant=false) {
       const portrait=camera.aspect<0.8;
       if(overview) { target.set(35,0,-9);eye.set(35,portrait?38:27,portrait?22:15); }
-      else {target.set(35+ball.x,0.4,-9+ball.z-3);eye.set(35+ball.x,13,-9+ball.z+12);}
+      else {
+        // Low, behind-the-ball view, with the golfer on the left of frame.
+        const dir=new THREE.Vector3(Math.sin(angle),0,-Math.cos(angle));
+        const origin=new THREE.Vector3(35+ball.x,root.position.y,-9+ball.z);
+        const right=new THREE.Vector3(-dir.z,0,dir.x);
+        target.copy(origin).addScaledVector(dir,3.8);target.y+=.65;
+        eye.copy(origin).addScaledVector(dir,portrait?-8:-6.2).addScaledVector(right,portrait?.2:.65);eye.y+=portrait?4.2:3.1;
+      }
+      if(drag&&!instant)return;
       camera.position.lerp(eye,instant||app.reducedMotion?1:1-Math.exp(-dt*5));camera.lookAt(target);
     }
     cameraFrame(0,true);
     const remove=app.addFrameHook(dt=>{
       if(charge)setPower(power+dt*0.65);
+      if(state==='swing') {
+        swingTime+=dt;
+        if(swingTime>=.32) {strike(ball,angle,power);strokes++;state='rolling';sound(320);hud('Ball rolling�');}
+      } else if(state==='rolling') swingTime+=dt;
+      golfer.group.visible=state!=='holed' && (state!=='rolling'||swingTime<1.05);
+      const lie=state==='rolling'?lastLie:ball;
+      golfer.group.position.set(lie.x,0,lie.z);golfer.group.rotation.y=-angle;
+      const windup=-(.25+power*.5);
+      const pose=state==='swing'?windup*(1-Math.min(swingTime/.32,1)):state==='rolling'?Math.sin(Math.min((swingTime-.32)/.5,1)*Math.PI)*.4:(charge||drag)?windup:0;
+      golfer.pose(pose);
       accumulator+=Math.min(dt,0.1);
       while(accumulator>=STEP){
         accumulator-=STEP;
@@ -187,6 +210,7 @@ export function initGolfMode(app) {
       remove();listeners.forEach(fn=>fn());cancel();audio?.close();
       if (oldTabIndex === null) canvas.removeAttribute('tabindex'); else canvas.setAttribute('tabindex',oldTabIndex);
       previousFocus?.focus();
+      golfer.dispose();
       disposeGroup(root);allMaterials.forEach(m=>m.dispose());
       savedFlag.forEach((o,i)=>{if(o)o.visible=flagVisibility[i];});
       el('golf-hud').hidden=true;el('control-hint').hidden=false;window.__GOLF__=undefined;
