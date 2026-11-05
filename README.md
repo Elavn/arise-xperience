@@ -6,7 +6,8 @@ An interactive 3D virtual tour and architectural preview for ARISE Palm Resort i
 
 - **Interactive 3D Scene**: Explore the resort layout, arrival gate, and golf clubhouse in real time.
 - **First-Person Walk Mode**: Walk through the grounds and inspect the architectural spaces up close.
-- **Interactive Mini Golf**: Play an interactive golf hole on the resort grounds.
+- **Palm Circuit Mini Golf**: Three playable holes with rail rebounds, sand, water penalties, predicted shot paths, stars, scorecards and a saved personal best.
+- **Resort Passport**: Earn five locally saved discoveries by exploring the arrival, clubhouse, aerial view, walk mode and completing a golf round.
 - **Photo Gallery**: High-resolution rendered gallery shots and architectural views.
 - **Lighting Controls**: Switch between daytime and sunset atmospheric lighting presets.
 
@@ -20,7 +21,7 @@ An interactive 3D virtual tour and architectural preview for ARISE Palm Resort i
 
 ### Prerequisites
 
-Ensure you have [Node.js](https://nodejs.org/) installed (version 18+ recommended).
+Ensure you have [Node.js](https://nodejs.org/) installed (version 20.19+ or 22.12+ required).
 
 ### Installation
 
@@ -52,3 +53,9 @@ Preview the production build locally:
 npm run preview
 ```
 
+
+## Palm Circuit controls
+
+Drag back anywhere on the course and release to putt, or use the power slider and Putt button. Arrow keys adjust aim and power; hold Space to charge and release to shoot. Escape returns to the resort. Course and follow cameras are available, along with sound and round restart controls. A cancelled pointer gesture or loss of window focus cancels charging.
+
+The three holes share one course definition with the renderer and a fixed 120 Hz physics simulation. Rail restitution, obstacle collisions, sand friction, speed-sensitive cup capture and water penalties are covered by `npm test`. Progress and best scores are stored on this browser only; storage failure does not prevent play. The golf challenge is a stylized game, not a surveyed resort course.

@@ -234,3 +234,61 @@ body[data-mode="golf"] #hotspots { opacity: 0; pointer-events: none; }
   .golf-hint { display: none; }
   .walk-hint { bottom: 24px; font-size: 10.5px; }
 }
+
+/* Resort challenge: an unobstructed course with a compact game HUD. */
+body[data-mode="golf"] .topbar, body[data-mode="golf"] .scene-shade { display: none; }
+body[data-mode="golf"] #canvas-host { touch-action: none; }
+.golf-top { top: 24px; left: 24px; right: 24px; transform: none; justify-content: space-between; border-radius: 16px; padding: 16px 20px; background: #12392fee; }
+#golf-course-name { display: block; margin-top: 5px; font-family: Georgia,serif; font-size: 25px; font-weight: 400; }
+.golf-top button, .golf-round button { border: 1px solid #ffffff35; background: #ffffff0a; color: #fff6e2; border-radius: 8px; min-height: 40px; padding: 8px 12px; }
+.golf-round { position: absolute; left: 24px; top: 135px; width: 210px; padding: 18px; border: 1px solid #ffffff30; border-radius: 12px; background: #12392fe8; }
+.golf-round p { font-size: 11px; color: #c3d2c5; }
+.golf-round button { width: 100%; margin-top: 8px; }
+#golf-scorecard { display: flex; gap: 8px; margin-top: 15px; }
+#golf-scorecard > span { flex: 1; display: grid; gap: 8px; text-align: center; padding: 10px 4px; border: 1px solid #ffffff20; border-radius: 8px; font-size: 23px; }
+#golf-scorecard small { font-size: 9px; letter-spacing: .1em; color: #c3d2c5; }
+#golf-scorecard .current { border-color: #efaa65; background: #efaa6515; }
+.golf-bottom { width: min(600px,calc(100vw - 32px)); gap: 8px; bottom: max(18px,env(safe-area-inset-bottom)); }
+#golf-status { margin: 0; font-size: 12px; text-align: center; padding: 9px 14px; background: #12392fee; border-radius: 8px; }
+.golf-shot-controls { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border: 1px solid #ffffff35; border-radius: 14px; background: #12392ff5; pointer-events: auto; }
+.golf-shot-controls > button { flex: 0 0 44px; height: 48px; border: 1px solid #ffffff40; border-radius: 8px; color: #fff6e2; background: transparent; font-size: 24px; }
+.golf-shot-controls label { flex: 1; min-width: 0; font-size: 10px; letter-spacing: .12em; }
+#golf-power-value { float: right; color: #ffc078; }
+#golf-power-input { width: 100%; margin: 8px 0 0; accent-color: #f4a45f; height: 24px; }
+.golf-shot-controls #golf-swing { flex-basis: 100px; width: auto; font-size: 14px; color: #173d32; background: #f4a45f; }
+.golf-hint { font-size: 10px; line-height: 1.6; }
+#golf-hud button:disabled { opacity: .45; cursor: default; }
+.golf-result-stars { color: #ffc078!important; font-size: 30px!important; letter-spacing: 8px; }
+#passport { position: absolute; z-index: 5; top: 110px; right: 28px; width: 220px; padding: 16px; background: #12392fe8; border: 1px solid #ffffff30; border-radius: 10px; }
+#passport > span { font-size: 9px; letter-spacing: .15em; color: #eab77b; }
+#passport strong { display: block; margin: 8px 0 12px; font-size: 14px; }
+#passport-stamps { display: flex; flex-wrap: wrap; gap: 7px; font-size: 10px; color: #b1c5bb; }
+#passport-stamps span { padding: 5px; border: 1px solid #ffffff20; border-radius: 4px; }
+#passport-stamps .earned { color: #ffcf8a; border-color: #ffcf8a70; }
+body[data-mode="golf"] #passport, body[data-mode="walk"] #passport { display: none; }
+@media(max-width:760px) {
+  #passport { top: 90px; right: 16px; width: 170px; padding: 12px; }
+  #passport-stamps { display: none; }
+  #passport strong { margin-bottom: 0; font-size: 12px; }
+  .golf-top { top: 12px; left: 12px; right: 12px; padding: 12px; gap: 8px; flex-wrap: wrap; }
+  .golf-course { display: inline; font-size: 9px; }
+  #golf-course-name { font-size: 20px; }
+  .golf-top-actions { margin-left: auto; }
+  .golf-top button { font-size: 10px; padding: 7px; }
+  .golf-round { top: 132px; left: 12px; width: auto; padding: 8px; }
+  .golf-round > .golf-course, .golf-round p { display: none; }
+  #golf-scorecard { margin: 0; gap: 4px; }
+  #golf-scorecard > span { font-size: 16px; padding: 6px; gap: 4px; }
+  .golf-round button { font-size: 10px; padding: 4px; min-height: 32px; }
+  .golf-shot-controls { gap: 6px; padding: 8px; }
+  .golf-shot-controls #golf-swing { flex-basis: 74px; }
+  #golf-status { font-size: 10px; }
+  .golf-hint { display: block; font-size: 9px; padding: 4px 10px; }
+}
+@media(max-height:550px) {
+  .golf-top { top: 8px; padding: 8px 14px; }
+  #golf-course-name { font-size: 18px; }
+  .golf-round { top: 90px; width: 160px; padding: 10px; }
+  .golf-round p, .golf-round > .golf-course, .golf-hint { display:none; }
+  .golf-bottom { bottom: 8px; width: min(500px,65vw); left: auto; right: 12px; transform: none; }
+}

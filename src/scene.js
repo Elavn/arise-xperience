@@ -1,3 +1,4 @@
+import { discover } from './passport.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -465,7 +466,7 @@ function setMode(next) {
   document.getElementById('golf-toggle').setAttribute('aria-pressed', String(next === 'golf'));
   controls.enabled = next === 'orbit';
   if (next === 'orbit') moveToView(currentView, true);
-  else if (next === 'walk') modeCleanup = enterWalkMode(app);
+  else if (next === 'walk') { discover('walk'); modeCleanup = enterWalkMode(app); }
   else if (next === 'golf') modeCleanup = enterGolfMode(app);
 }
 
@@ -492,6 +493,7 @@ const hotspotElements = [...document.querySelectorAll('[data-hotspot]')];
 function setViewUI(name) {
   const view = VIEWS[name];
   currentView = name;
+  discover(name);
   document.getElementById('place-kicker').textContent = view.kicker;
   document.getElementById('place-title').innerHTML = view.title;
   document.getElementById('place-description').textContent = view.description;

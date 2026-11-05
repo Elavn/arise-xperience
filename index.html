@@ -26,7 +26,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="M13 8.5 10 11l-2.5 1M13 8.5l1.5 3 3 2M13 8.5 12 13l-1 4-3 4.5M12 17l2.5 2 1.5 4"/></svg>
           <span>Walk</span>
         </button>
-        <button class="tool-button" id="golf-toggle" aria-pressed="false" aria-label="Play a first-person golf hole">
+        <button class="tool-button" id="golf-toggle" aria-pressed="false" aria-label="Play the three-hole mini-golf challenge">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4m0 0 8 2.5L6 9"/><circle cx="18" cy="19" r="1.6"/></svg>
           <span>Play golf</span>
         </button>
@@ -45,7 +45,7 @@
     </header>
 
     <section class="intro-panel" aria-live="polite">
-      <div class="concept-label">CONCEPT 3D PREVIEW</div>
+      <div class="concept-label">YOUR VIRTUAL RESORT ESCAPE</div>
       <p class="place-kicker" id="place-kicker">WELCOME TO AKWA IBOM</p>
       <h1 id="place-title">A tropical escape,<br>before you arrive.</h1>
       <p id="place-description">Explore the arrival gate, distinctive golf clubhouse and landscaped grounds inspired by the resort’s latest reference photos.</p>
@@ -104,27 +104,16 @@
 
     <div id="golf-hud" hidden>
       <div class="golf-top">
-        <span class="golf-course">ARISE PRACTICE GREEN · PAR 3</span>
-        <span id="golf-strokes">Stroke 1</span>
-        <span id="golf-distance">— m to the pin</span>
-        <span class="golf-top-actions">
-          <button class="tool-button" id="golf-mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9c1.5 1.5 1.5 4.5 0 6"/></svg><span>Sound on</span></button>
-          <button class="tool-button" id="golf-exit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg><span>Exit</span></button>
-        </span>
+        <div><span id="golf-hole-label" class="golf-course"></span><strong id="golf-course-name"></strong></div>
+        <span id="golf-strokes"></span><span id="golf-distance"></span>
+        <div class="golf-top-actions"><button id="golf-mute" aria-pressed="false">Sound on</button><button id="golf-exit">Exit golf ↗</button></div>
       </div>
-      <div class="golf-banner" id="golf-banner" hidden></div>
+      <aside class="golf-round"><span class="golf-course">THE PALM CIRCUIT</span><div id="golf-scorecard" aria-label="Round scorecard"></div><p>Three holes. One personal best.</p><button id="golf-camera">Follow camera</button><button id="golf-restart">Restart round</button></aside>
+      <div class="golf-banner" id="golf-banner" role="status" hidden></div>
       <div class="golf-bottom">
-        <div class="golf-clubs" role="group" aria-label="Choose a club">
-          <button data-club="driver"><strong>1</strong> Driver</button>
-          <button data-club="iron" class="active"><strong>2</strong> Iron</button>
-          <button data-club="putter"><strong>3</strong> Putter</button>
-        </div>
-        <div class="golf-power" aria-hidden="true"><div id="golf-power-fill"></div></div>
-        <button id="golf-swing">Hold to swing</button>
-        <div class="golf-hint">
-          <span class="walk-hint-desktop">Drag or move mouse to aim · hold Space to charge, release to swing · keys 1–3 pick a club · R re-tee · Esc exit</span>
-          <span class="walk-hint-touch">Drag to aim · hold “Hold to swing” to charge, release to hit</span>
-        </div>
+        <p id="golf-status" role="status"></p>
+        <div class="golf-shot-controls"><button id="golf-aim-left" aria-label="Aim left">↶</button><label for="golf-power-input">SHOT POWER <output id="golf-power-value">60%</output><input id="golf-power-input" type="range" min="2" max="100" value="60"></label><button id="golf-aim-right" aria-label="Aim right">↷</button><button id="golf-swing">Putt →</button></div>
+        <div class="golf-hint">Drag back on the course and release to putt · or adjust power and press Putt<br>Keyboard: ← → aim · ↑ ↓ power · hold Space and release to putt</div>
       </div>
     </div>
 
@@ -133,6 +122,8 @@
       <span id="tour-step">Stop 1 of 4</span>
       <button id="tour-next">Next stop <span aria-hidden="true">→</span></button>
     </div>
+
+    <aside id="passport" aria-label="Exploration passport"><span>YOUR RESORT PASSPORT</span><strong id="passport-count">0 / 5 discoveries</strong><div id="passport-stamps"></div></aside>
 
     <div id="loading-screen" role="status" aria-live="polite">
       <div class="loading-brand">ARISE <span>PALM RESORT</span></div>
@@ -171,7 +162,7 @@
     <p>This interactive concept preview brings five resort reference photos together in a navigable 3D landscape. The gate and clubhouse follow the visible roof forms, materials and architectural details.</p>
     <div class="about-note"><strong>A preview, not a measured survey</strong><span>Landscaping, distances and some site details are interpreted for visualization. Confirm current facilities and visitor arrangements with the resort before traveling.</span></div>
     <h3>How to explore</h3>
-    <ul class="controls-list"><li><span>Orbit the scene</span><strong>Drag / one-finger swipe</strong></li><li><span>Zoom in or out</span><strong>Scroll / pinch</strong></li><li><span>Move between stops</span><strong>View buttons / keys 1–5</strong></li><li><span>Start or pause the tour</span><strong>Guided tour button / G</strong></li><li><span>Walk the grounds</span><strong>Walk button · WASD / arrows · tap a spot</strong></li><li><span>Play the practice green</span><strong>Play golf button · hold Space to swing</strong></li></ul>
+    <ul class="controls-list"><li><span>Orbit the scene</span><strong>Drag / one-finger swipe</strong></li><li><span>Zoom in or out</span><strong>Scroll / pinch</strong></li><li><span>Move between stops</span><strong>View buttons / keys 1–5</strong></li><li><span>Start or pause the tour</span><strong>Guided tour button / G</strong></li><li><span>Walk the grounds</span><strong>Walk button · WASD / arrows · tap a spot</strong></li><li><span>Play the Palm Circuit</span><strong>Play golf button · hold Space to swing</strong></li></ul>
     <button class="primary-button" id="about-start">Begin exploring <span aria-hidden="true">→</span></button>
   </dialog>
 
