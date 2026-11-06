@@ -116,48 +116,73 @@ def hip_roof(name, center, radius, eave_z, apex_z, sides=8, parent=CLUB, phase=m
                 line(name + '_standing_seam', p, (cx, cy, apex_z + 0.035), 0.015, 'roof_seam', parent)
     return obj
 
-def crown_roof(name, center, radius, eave_z, apex_z, peaks=6, parent=CLUB, phase=math.pi/6, deck_drop=0.8):
-    # Coronet roof: a ring of triangular spikes rising from the eave to apexes
-    # set inward from the rim, draining down to a low central deck — the crown
-    # silhouette visible in the resort's aerial photos.
+def crown_roof(name, center, radius, eave_z, apex_z, peaks=8, parent=CLUB, phase=-math.pi/2, deck_drop=0.06):
+    # Photo-derived folded octagonal roof: eight outward gables, each on a
+    # straight perimeter edge, with paired orange planes falling to a shared
+    # central valley. Adjacent sectors share exact eave vertices, not overlaps.
+    print('Building', name, flush=True)
     cx, cy = center
-    r_apex = radius * 0.55
-    deck_z = eave_z - deck_drop
-    C = (cx, cy, deck_z)
-    verts = []
-    faces = []
-    indices = []
+    C = Vector((cx, cy, eave_z - deck_drop))
+    verts, faces, indices = [], [], []
+    half = math.pi / peaks
+    details = {}
+
+    def detail_line(label, a, b, radius, mat, parent):
+        # Batch narrow roof ribs directly instead of hundreds of bevelled objects.
+        a, b = Vector(a), Vector(b)
+        direction = (b-a).normalized()
+        u = direction.cross(Vector((0,0,1))).normalized()
+        if u.length < 0.5:
+            u = Vector((1,0,0))
+        v = direction.cross(u).normalized()
+        points, quads = details.setdefault(mat, ([], []))
+        start = len(points)
+        for endpoint in (a,b):
+            for side in range(6):
+                angle = side*math.tau/6
+                points.append(tuple(endpoint + radius*(math.cos(angle)*u + math.sin(angle)*v)))
+        for side in range(6):
+            nxt = (side+1)%6
+            quads.append((start+side,start+nxt,start+6+nxt,start+6+side))
+        quads.extend([tuple(start+i for i in reversed(range(6))),tuple(start+6+i for i in range(6))])
+
     for i in range(peaks):
-        a = phase + i * math.tau / peaks
-        half = math.pi / peaks * 1.12
-        apex = (cx + r_apex * math.cos(a), cy + r_apex * math.sin(a), apex_z)
-        eave_l = (cx + radius * math.cos(a - half), cy + radius * math.sin(a - half), eave_z)
-        eave_r = (cx + radius * math.cos(a + half), cy + radius * math.sin(a + half), eave_z)
+        angle = phase + i * math.tau / peaks
+        outward = Vector((math.cos(angle), math.sin(angle), 0))
+        left = Vector((cx + radius * math.cos(angle-half), cy + radius * math.sin(angle-half), eave_z))
+        right = Vector((cx + radius * math.cos(angle+half), cy + radius * math.sin(angle+half), eave_z))
+        apex = (left + right) / 2
+        apex.z = apex_z
         base = len(verts)
-        verts += [apex, eave_l, eave_r, C]
-        # Each spike is one warm tone, alternating orange/red around the ring —
-        # matching the striped peaks in the reference photos.
-        faces += [(base, base + 1, base + 2), (base + 1, base + 3, base), (base, base + 3, base + 2)]
-        indices += [i % 2, i % 2, i % 2]
-    obj = mesh_obj(name, verts, faces, ['roof_orange', 'roof_red'], parent, indices)
-    solid = obj.modifiers.new('Roof thickness', 'SOLIDIFY')
-    solid.thickness = 0.12
-    for i in range(peaks):
-        a = phase + i * math.tau / peaks
-        half = math.pi / peaks * 1.12
-        apex = Vector((cx + r_apex * math.cos(a), cy + r_apex * math.sin(a), apex_z))
-        eave_l = Vector((cx + radius * math.cos(a - half), cy + radius * math.sin(a - half), eave_z))
-        eave_r = Vector((cx + radius * math.cos(a + half), cy + radius * math.sin(a + half), eave_z))
-        deck = Vector(C).copy(); deck.z = C[2]
-        # Hip seams down both spike edges, valley seam into the deck, standing
-        # seams fanning across the outer face — the striped metal look.
-        line(name + '_hip', eave_l, apex, 0.045, 'roof_seam', parent)
-        line(name + '_hip', eave_r, apex, 0.045, 'roof_seam', parent)
-        line(name + '_valley', (eave_l + eave_r) / 2, apex, 0.03, 'roof_seam', parent)
-        for j in range(1, 10):
-            p = eave_l.lerp(eave_r, j / 10)
-            p.z += 0.035
-            line(name + '_standing_seam', p, apex + Vector((0, 0, 0.035)), 0.015, 'roof_seam', parent)
+        verts.extend([tuple(left), tuple(right), tuple(apex), tuple(C)])
+        faces.extend([(base,base+1,base+2),(base,base+2,base+3),(base+2,base+1,base+3)])
+        indices.extend([2,0,1])
+        # Delicate horizontal louvres on the outward triangular gables.
+        rows = max(14, int((apex_z-eave_z)/0.115))
+        for row in range(1, rows):
+            t = row/rows
+            a = left.lerp(apex,t) + outward*0.018
+            b = right.lerp(apex,t) + outward*0.018
+            detail_line(name+'_gable_louvre',a,b,0.014,'roof_seam',parent)
+        # Thin metal seams follow the pitched planes, not the dark gables.
+        for corner in (left,right):
+            for j in range(1,12):
+                a=corner.lerp(C,j/12); a.z+=0.012
+                b=apex.lerp(C,j/12); b.z+=0.012
+                detail_line(name+'_metal_seam',a,b,0.009,'roof_red',parent)
+        detail_line(name+'_ridge',apex,C+Vector((0,0,0.018)),0.025,'roof_orange',parent)
+        detail_line(name+'_valley',left,C,0.018,'roof_red',parent)
+        detail_line(name+'_gable_edge',left,apex,0.025,'roof_seam',parent)
+        detail_line(name+'_gable_edge',right,apex,0.025,'roof_seam',parent)
+        # Straight, pale fascia follows the octagonal eave.
+        tangent = right-left
+        fascia=box(name+'_fascia',(left+right)/2-Vector((0,0,0.12)),(tangent.length,0.16,0.24),'stone_light',parent,0.015)
+        fascia.rotation_euler.z=math.atan2(tangent.y,tangent.x)
+    for mat, (points, quads) in details.items():
+        mesh_obj(name+'_'+mat+'_details',points,quads,[mat],parent)
+    obj=mesh_obj(name,verts,faces,['roof_orange','roof_red','roof_brown'],parent,indices)
+    obj['reference']='public/photos/clubhouse-aerial.png; clubhouse-front.png; clubhouse-side.png'
+    solid=obj.modifiers.new('Folded metal thickness','SOLIDIFY'); solid.thickness=0.045
     return obj
 
 def rectangular_hip(name, center, width, depth, eave_z, apex_z, parent=GATE):
@@ -233,10 +258,11 @@ for x in (-7.2,-2.5,2.5,7.2):
 for i in range(4):
     box('Entry_step',(0,-9.25-i*0.48,0.34-i*0.07),(10.5+i*0.35,2.4+i*0.9,0.18),'stone_light',CLUB,0.025)
 
-# Roofs: crown-shaped clusters of striped pyramid spikes around a low deck,
-# matching the aerial reference photos; small pyramid cap on the service wing.
-crown_roof('Main_crown_roof',(1,2.5),9.1,9.0,15.2,6,CLUB)
-crown_roof('West_crown_roof',(-8,1.5),6.3,8.9,12.6,4,CLUB,phase=math.pi/4)
+print('Building shell ready', flush=True)
+# Eight folded gables per roof, with non-intersecting large/small footprints.
+# Photo proportions are interpreted; no surveyed dimensions are available.
+crown_roof('Main_crown_roof',(2.5,2.5),7.5,9.0,12.3,8,CLUB)
+crown_roof('West_crown_roof',(-9.5,1.5),5.0,9.1,11.5,8,CLUB)
 hip_roof('East_service_roof',(10,3),4.6,5.55,7.0,4,CLUB,phase=math.pi/4,striped=False)
 # Low connecting metal roof and terrace.
 box('Connecting_flat_roof',(-2,-4.8,5.15),(8,4,0.22),'metal',CLUB,0.02)
@@ -283,6 +309,7 @@ for side in (-1,1):
     for px in [side*(11.5+i*3.0) for i in range(6)]:
         box('Boundary_pier',(px,GY+0.4,1.55),(0.7,0.8,3.1),'stone',GATE,0.04)
 
+print('Geometry ready; applying modifiers', flush=True)
 # Apply modifiers, then batch static architecture by parent and material for a light GLB.
 bpy.ops.object.select_all(action='DESELECT')
 meshes=[obj for obj in bpy.context.scene.objects if obj.type=='MESH']
@@ -293,6 +320,7 @@ for obj in meshes:
         bpy.ops.object.modifier_apply(modifier=modifier.name)
     obj.select_set(False)
 
+print('Modifiers ready; batching meshes', flush=True)
 batches={}
 for obj in meshes:
     key=(obj.parent.name if obj.parent else 'Scene', obj.data.materials[0].name)
@@ -312,6 +340,7 @@ for obj in bpy.context.scene.objects:
     if obj.type == 'MESH':
         obj.select_set(True)
 
+print('Saving architecture', flush=True)
 blend_path=os.path.join(SOURCE_DIR,'resort-architecture.blend')
 bpy.ops.wm.save_as_mainfile(filepath=blend_path)
 bpy.ops.export_scene.gltf(filepath=os.path.join(MODEL_DIR,'resort-architecture.glb'),export_format='GLB',use_selection=True,export_apply=True)

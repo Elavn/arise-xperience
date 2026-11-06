@@ -63,7 +63,9 @@ Run `npm test` for physics and interaction checks, including orbit/pan without s
 
 ## Replica-preserving presentation
 
-The original `public/models/resort-architecture.glb`, photo references, building-generation sources and resort landscaping are unchanged. The golfer, ball and practice markers are a temporary gameplay layer removed on exit; the underlying landscape stays unchanged.
+The clubhouse roofs in `public/models/resort-architecture.glb` now follow the aerial, front and side photographs in `public/photos`: two separate eight-sided folded roofs, orange metal panels, dark horizontal gable louvres and straight pale fascia. Their proportions are interpreted from the photographs rather than surveyed dimensions. The walls, glazing, entrance, gate and landscape footprints are preserved. The editable source is `src/blender/resort-architecture.blend`; regenerate both model files with `blender -b --factory-startup --python src/model.py`.
+
+The golfer, ball and practice markers are a temporary gameplay layer removed on exit.
 
 Golf opens with a low player-side camera inspired by the supplied screenshot, with an original procedural Black golfer, putting stance, club wind-up and follow-through. This is a stylized mesh character, not a photoreal scanned person. View hole switches to an overhead camera.
 
@@ -75,4 +77,4 @@ The ball radius is 0.043 scene units, reduced from 0.18. The cup has a flush tur
 
 Cup contact is resolved at 720 substeps per second. The ball loses ground support over the opening, drops under gravity, and collides with the rounded turf lip and recessed walls. Firm putts can dip and hop off the far rim; slower putts can fall in. There is no binary speed threshold or magnetic capture. Scoring waits until the ball reaches the bottom. The model remains a lightweight approximation rather than a full rigid-body simulation. Tests cover drops, rollovers, lip-outs and misses outside the cup.
 
-Grass uses a subdued green palette and a locally generated turf texture. Lower daylight exposure and light intensities reduce glare. Closely overlapping green layers have separate elevations to prevent depth shimmer; their original footprints and the building geometry are unchanged.
+Grass uses a subdued green palette and a locally generated turf texture. Lower daylight exposure and light intensities reduce glare. Closely overlapping green layers have separate elevations to prevent depth shimmer; their original footprints are unchanged.
