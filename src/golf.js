@@ -116,7 +116,7 @@ export function initGolfMode(app) {
       for(let i=0;i<720;i++) {
         const event=stepBall(ghost,COURSES[hole]);
         if(i%6===0)points.push(new THREE.Vector3(ghost.x,0.08,ghost.z));
-        if(['cup','falling','out','rest'].includes(event))break;
+        if(['cup','out','rest'].includes(event))break;
       }
       guide.geometry.dispose(); guide.geometry=new THREE.BufferGeometry().setFromPoints(points); guide.computeLineDistances();
     }

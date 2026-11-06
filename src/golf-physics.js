@@ -21,54 +21,65 @@ export function strike(b, angle, power) {
   const speed = Math.max(0, Math.min(1, power)) * 12;
   b.vx = Math.sin(angle) * speed; b.vz = -Math.cos(angle) * speed;
 }
-export function stepBall(b, c, dt = STEP) {
-  if (b.falling) {
-    b.vy -= 9.81 * dt;
-    b.y += b.vy * dt;
-    b.x += b.vx * dt; b.z += b.vz * dt;
-    const dx=b.x-c.pin[0], dz=b.z-c.pin[1], d=Math.hypot(dx,dz);
-    const clearance=CUP_RADIUS-RADIUS;
-    if(d>clearance) {
-      const nx=dx/d,nz=dz/d,dot=b.vx*nx+b.vz*nz;
-      b.x=c.pin[0]+nx*clearance;b.z=c.pin[1]+nz*clearance;
-      if(dot>0){b.vx-=1.25*dot*nx;b.vz-=1.25*dot*nz;}
+// Resolve gravity and the rounded cup lip at small fixed substeps. A ball
+// loses support above the opening instead of being captured by a speed test.
+const GRAVITY=9.81;
+const SUBSTEP=1/720;
+export function stepBall(b,c,dt=STEP) {
+  const count=Math.max(1,Math.ceil(dt/SUBSTEP));
+  let result='rest';
+  for(let i=0;i<count;i++) {
+    result=stepContact(b,c,dt/count);
+    if(result==='cup'||result==='out')return result;
+  }
+  return result;
+}
+function stepContact(b,c,dt) {
+  const y=b.y??RADIUS;
+  const distance=Math.hypot(b.x-c.pin[0],b.z-c.pin[1]);
+  const supported=distance>=CUP_RADIUS && y<=RADIUS+.0001 && (b.vy??0)<=0;
+  if(supported) {
+    const speed=Math.hypot(b.vx,b.vz),next=Math.max(0,speed-surfaceAt(b.x,b.z).decel*dt);
+    if(speed){b.vx*=next/speed;b.vz*=next/speed;}
+  }
+  b.x+=b.vx*dt;b.z+=b.vz*dt;
+  const dx=b.x-c.pin[0],dz=b.z-c.pin[1],d=Math.hypot(dx,dz);
+  if(Math.hypot(b.x,b.z)>68){b.vx=b.vz=0;return 'out';}
+  if(supported && d>=CUP_RADIUS){
+    // Preserve resting state exactly and avoid applying gravity on grass.
+    if(b.y!==undefined)b.y=RADIUS;
+    if(b.vy!==undefined)b.vy=0;
+    if(b.falling)b.falling=false;
+    return moving(b)?'rolling':'rest';
+  }
+  b.vy=(b.vy??0)-GRAVITY*dt;
+  b.y=y+b.vy*dt;
+  // Sphere against the circular turf lip. The contact normal determines
+  // whether a fast ball hops out or a deeper ball rebounds into the cup.
+  const radial=d-CUP_RADIUS,lipDistance=Math.hypot(radial,b.y);
+  if(lipDistance<RADIUS && lipDistance>1e-8 && d>1e-8) {
+    const nr=radial/lipDistance,ny=b.y/lipDistance;
+    const nx=dx/d*nr,nz=dz/d*nr;
+    const penetration=RADIUS-lipDistance;
+    b.x+=nx*penetration;b.z+=nz*penetration;b.y+=ny*penetration;
+    const impact=b.vx*nx+b.vy*ny+b.vz*nz;
+    if(impact<0){
+      const restitution=b.y>0?.22:.12;
+      b.vx-=(1+restitution)*impact*nx;b.vy-=(1+restitution)*impact*ny;b.vz-=(1+restitution)*impact*nz;
+      b.vx*=.96;b.vz*=.96;
     }
-    if(b.y<=-CUP_DEPTH+RADIUS){b.y=-CUP_DEPTH+RADIUS;b.vx=b.vz=b.vy=0;return 'cup';}
-    return 'falling';
   }
-  const oldX = b.x, oldZ = b.z;
-  const speed = Math.hypot(b.vx, b.vz);
-  const next = Math.max(0, speed - surfaceAt(b.x,b.z).decel * dt);
-  const ratio = speed ? next / speed : 0;
-  b.vx *= ratio; b.vz *= ratio;
-  b.x += b.vx * dt; b.z += b.vz * dt;
-  if (Math.hypot(b.x,b.z)>68) {b.vx=b.vz=0;return 'out';}
-  // A swept opening test avoids tunnelling. Available travel time over the
-  // opening must exceed the gravitational drop time; glancing putts have
-  // a shorter chord and therefore need less speed to fall in.
-  const dx=b.x-oldX,dz=b.z-oldZ,length=Math.hypot(dx,dz);
-  const nx=length?dx/length:1,nz=length?dz/length:0;
-  const along=(c.pin[0]-oldX)*nx+(c.pin[1]-oldZ)*nz;
-  const lateral=Math.abs((c.pin[0]-oldX)*nz-(c.pin[1]-oldZ)*nx);
-  const opening=CUP_RADIUS-RADIUS*.25;
-  const halfChord=Math.sqrt(Math.max(0,opening*opening-lateral*lateral));
-  const entry=along-halfChord,exit=along+halfChord;
-  const inside=Math.hypot(b.x-c.pin[0],b.z-c.pin[1])<opening;
-  if(lateral<opening && ((entry<=length && exit>=0)||inside)) {
-    const crossingTime=2*halfChord/Math.max(next,.001);
-    if(crossingTime>=Math.sqrt(2*RADIUS/9.81)) {
-      b.falling=true;b.y=RADIUS;b.vy=0;b.vx*=.45;b.vz*=.45;
-      return 'falling';
-    }
+  const rd=Math.hypot(b.x-c.pin[0],b.z-c.pin[1]);
+  if(b.y<-RADIUS && rd>CUP_RADIUS-RADIUS && rd>0){
+    const nx=(b.x-c.pin[0])/rd,nz=(b.z-c.pin[1])/rd;
+    const dot=b.vx*nx+b.vz*nz;
+    b.x=c.pin[0]+nx*(CUP_RADIUS-RADIUS);b.z=c.pin[1]+nz*(CUP_RADIUS-RADIUS);
+    if(dot>0){b.vx-=1.2*dot*nx;b.vz-=1.2*dot*nz;}
   }
-  // A slow glancing contact loses radial momentum at the lip; there is no
-  // attraction outside the mouth and firm putts continue across it.
-  const rx=b.x-c.pin[0],rz=b.z-c.pin[1],distance=Math.hypot(rx,rz);
-  if(b.rimContact && distance>CUP_RADIUS+RADIUS)b.rimContact=false;
-  if(!b.rimContact && distance<CUP_RADIUS && lateral>opening*.75 && next<1.8 && distance>0) {
-    const dot=(b.vx*rx+b.vz*rz)/distance;
-    if(dot<0){b.vx-=1.1*dot*rx/distance;b.vz-=1.1*dot*rz/distance;b.vx*=.82;b.vz*=.82;b.rimContact=true;}
+  if(rd>=CUP_RADIUS && b.y<RADIUS && b.y>=0){
+    b.y=RADIUS;b.vy=Math.abs(b.vy)>.15?Math.abs(b.vy)*.15:0;
   }
-  if (next < 0.025) b.vx = b.vz = 0;
-  return moving(b) ? 'rolling' : 'rest';
+  if(b.y<=-CUP_DEPTH+RADIUS){b.y=-CUP_DEPTH+RADIUS;b.vx=b.vz=b.vy=0;b.falling=true;return 'cup';}
+  b.falling=b.y<RADIUS-.0001 || rd<CUP_RADIUS || Math.abs(b.vy)>.001;
+  return b.falling?'falling':moving(b)?'rolling':'rest';
 }

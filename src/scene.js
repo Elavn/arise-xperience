@@ -1,3 +1,4 @@
+import { createTurfTexture, turfUVs } from './turf.js';
 import { initQuietUI } from './quiet-ui.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -70,14 +71,14 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
+renderer.toneMappingExposure = 0.96;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const day = {
   top: new THREE.Color(0x6fabc1), horizon: new THREE.Color(0xd8dfc5), fog: new THREE.Color(0xc8d4b9),
-  sun: new THREE.Color(0xffefd1), ground: new THREE.Color(0x526c35), exposure: 1.08,
+  sun: new THREE.Color(0xffefd1), ground: new THREE.Color(0x526c35), exposure: 0.96,
 };
 const sunset = {
   top: new THREE.Color(0x48536f), horizon: new THREE.Color(0xf3a267), fog: new THREE.Color(0xd59669),
@@ -100,9 +101,9 @@ controls.panSpeed = 0.65;
 controls.rotateSpeed = 0.5;
 controls.zoomSpeed = 0.75;
 
-const hemisphere = new THREE.HemisphereLight(0xcce4eb, 0x52603c, 2.1);
+const hemisphere = new THREE.HemisphereLight(0xcce4eb, 0x52603c, 1.65);
 scene.add(hemisphere);
-const sun = new THREE.DirectionalLight(day.sun, 3.4);
+const sun = new THREE.DirectionalLight(day.sun, 2.4);
 sun.position.set(-38, 58, 34);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -149,11 +150,13 @@ const sky = new THREE.Mesh(
 );
 scene.add(sky);
 
+const turfTexture=createTurfTexture(renderer);
+const turfOptions={map:turfTexture,roughness:1,metalness:0,envMapIntensity:0.15};
 const MAT = {
-  grass: new THREE.MeshStandardMaterial({ color: 0x57763d, roughness: 1 }),
-  lawn: new THREE.MeshStandardMaterial({ color: 0x6f9449, roughness: 1 }),
-  green: new THREE.MeshStandardMaterial({ color: 0x79a64e, roughness: 0.95 }),
-  greenInner: new THREE.MeshStandardMaterial({ color: 0x8ab75b, roughness: 0.95 }),
+  grass: new THREE.MeshStandardMaterial({ color: 0x405f38, ...turfOptions }),
+  lawn: new THREE.MeshStandardMaterial({ color: 0x496c40, ...turfOptions }),
+  green: new THREE.MeshStandardMaterial({ color: 0x517849, ...turfOptions }),
+  greenInner: new THREE.MeshStandardMaterial({ color: 0x587f50, ...turfOptions }),
   road: new THREE.MeshStandardMaterial({ color: 0x4b504b, roughness: 0.92 }),
   paving: new THREE.MeshStandardMaterial({ color: 0x9d9c87, roughness: 0.9 }),
   path: new THREE.MeshStandardMaterial({ color: 0xc0b9a1, roughness: 0.95 }),
@@ -209,17 +212,19 @@ function organicDisc(name, center, radii, material, seedOffset = 0) {
     const y = Math.sin(angle) * radii[1] * variation;
     if (i === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
   }
-  const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), material);
+  const shapeGeometry=new THREE.ShapeGeometry(shape);
+  if(material.map===turfTexture)turfUVs(shapeGeometry);
+  const mesh = new THREE.Mesh(shapeGeometry, material);
   mesh.name = name;
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(center[0], 0.11, center[1]);
+  mesh.position.set(center[0], 0.11+Math.max(0,seedOffset-11)*0.004, center[1]);
   mesh.receiveShadow = true;
   scene.add(mesh);
   return mesh;
 }
 
 // Site surfaces: arrival axis, clubhouse court, golf green and connecting paths.
-const ground = new THREE.Mesh(new THREE.CircleGeometry(390, 72).rotateX(-Math.PI / 2), MAT.grass);
+const ground = new THREE.Mesh(turfUVs(new THREE.CircleGeometry(390, 72)).rotateX(-Math.PI / 2), MAT.grass);
 ground.receiveShadow = true;
 scene.add(ground);
 addBox('Dominic_Utuk_approach', [15, 0.12, 172], [0, 0.015, 19], MAT.road);
@@ -229,7 +234,7 @@ const court = new THREE.Mesh(new THREE.CircleGeometry(24, 64).rotateX(-Math.PI /
 court.position.set(0, 0.07, 2);
 court.receiveShadow = true;
 scene.add(court);
-const clubhouseLawn = new THREE.Mesh(new THREE.RingGeometry(24.4, 30, 64).rotateX(-Math.PI / 2), MAT.lawn);
+const clubhouseLawn = new THREE.Mesh(turfUVs(new THREE.RingGeometry(24.4, 30, 64)).rotateX(-Math.PI / 2), MAT.lawn);
 clubhouseLawn.position.set(0, 0.075, 2);
 clubhouseLawn.receiveShadow = true;
 scene.add(clubhouseLawn);
@@ -582,9 +587,9 @@ function updateLighting(mode) {
   scene.background.copy(theme.horizon);
   scene.fog.color.copy(theme.fog);
   sun.color.copy(theme.sun);
-  sun.intensity = mode === 'sunset' ? 2.5 : 3.4;
+  sun.intensity = mode === 'sunset' ? 2.0 : 2.4;
   sun.position.set(mode === 'sunset' ? -65 : -38, mode === 'sunset' ? 22 : 58, 34);
-  hemisphere.intensity = mode === 'sunset' ? 1.35 : 2.1;
+  hemisphere.intensity = mode === 'sunset' ? 1.25 : 1.65;
   hemisphere.groundColor.copy(theme.ground);
   renderer.toneMappingExposure = theme.exposure;
   const button = document.getElementById('lighting-toggle');

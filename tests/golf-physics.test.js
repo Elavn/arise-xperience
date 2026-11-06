@@ -13,15 +13,33 @@ test('fixed simulation matches across rendering frame rates',()=>{function run(f
 test('slow centered putt enters then drops under gravity before scoring',()=>{
   const c=COURSES[0],b={x:c.pin[0],z:c.pin[1]+CUP_RADIUS+.003,vx:0,vz:-.6,y:RADIUS,vy:0};
   let event;for(let i=0;i<20;i++){event=stepBall(b,c);if(event==='falling')break;}
-  assert.equal(event,'falling');assert.equal(b.y,RADIUS);
+  assert.equal(event,'falling');assert.ok(b.y<=RADIUS);
   stepBall(b,c);assert.ok(b.y<RADIUS);assert.ok(b.vy<0);
   assert.equal(simulate(b,c),'cup');assert.equal(b.y,-CUP_DEPTH+RADIUS);
 });
 test('a putt outside the cup is never magnetically pulled in',()=>{
   const c=COURSES[0],x=c.pin[0]+CUP_RADIUS+RADIUS+.01,b={x,z:c.pin[1]+.3,vx:0,vz:-1};
-  simulate(b,c);assert.equal(b.x,x);assert.equal(b.falling,undefined);
+  simulate(b,c);assert.equal(b.x,x);assert.ok(!b.falling);
 });
 test('a firm glancing putt lips out instead of scoring',()=>{
-  const c=COURSES[0],b={x:c.pin[0]+CUP_RADIUS*.85,z:c.pin[1]+.2,vx:0,vz:-1.7};
-  assert.notEqual(simulate(b,c),'cup');assert.equal(b.falling,undefined);
+  const c=COURSES[0],b={x:c.pin[0]+CUP_RADIUS*.85,z:c.pin[1]+.2,vx:0,vz:-2.5};
+  assert.notEqual(simulate(b,c),'cup');assert.ok(!b.falling);
+});
+
+test('a hard putt dips over the opening, hits the far lip and carries on',()=>{
+  const c=COURSES[0],b={x:c.pin[0],z:c.pin[1]+.2,vx:0,vz:-6,y:RADIUS,vy:0};
+  let minimum=RADIUS,maximum=RADIUS,event;
+  for(let i=0;i<1000;i++){event=stepBall(b,c);minimum=Math.min(minimum,b.y);maximum=Math.max(maximum,b.y);if(['cup','rest'].includes(event))break;}
+  assert.notEqual(event,'cup');assert.ok(b.z<c.pin[1]-.3);assert.ok(minimum<RADIUS-.001);assert.ok(maximum>RADIUS,'far lip produces a small hop');
+});
+test('centered moderate putts drop while firm edge putts escape',()=>{
+  const c=COURSES[0];
+  const centered={x:c.pin[0],z:c.pin[1]+.2,vx:0,vz:-1.7,y:RADIUS,vy:0};
+  const edge={x:c.pin[0]+CUP_RADIUS*.85,z:c.pin[1]+.2,vx:0,vz:-2.5,y:RADIUS,vy:0};
+  assert.equal(simulate(centered,c),'cup');assert.notEqual(simulate(edge,c),'cup');
+});
+test('cup crossing cannot tunnel at full shot speed',()=>{
+  const c=COURSES[0],b={x:c.pin[0],z:c.pin[1]+.2,vx:0,vz:-12,y:RADIUS,vy:0};
+  let dip=false;for(let i=0;i<15;i++){stepBall(b,c);dip ||= b.y<RADIUS;}
+  assert.ok(dip);assert.ok(b.z<c.pin[1]-CUP_RADIUS);assert.ok(!b.falling||b.y>=0);
 });
