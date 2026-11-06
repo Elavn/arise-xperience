@@ -5,8 +5,8 @@ export const CUP_DEPTH = 0.18;
 export const STEP = 1 / 120;
 // Tee variations on the existing resort green; all play to its original flag.
 export const COURSES = [
-  { name: 'Practice Green', par: 2, hint: 'Drag to look around. Aim with the arrows, then press Putt.', tee: [-12, -5], pin: [-2, -1] },
-  { name: 'South Approach', par: 3, hint: 'Explore your angle freely. Only Putt or Space takes a shot.', tee: [-2, 9], pin: [-2, -1] },
+  { name: 'Practice Green', par: 2, hint: 'Rotate to align your stance and aim. Press Putt to hit.', tee: [-12, -5], pin: [-2, -1] },
+  { name: 'South Approach', par: 3, hint: 'Rotate to aim; Shift-drag to pan. Only Putt or Space hits.', tee: [-2, 9], pin: [-2, -1] },
   { name: 'Across the Green', par: 4, hint: 'Play the open green toward the flag.', tee: [10, -8], pin: [-2, -1] },
 ];
 // The elliptical bunker and green match the landscaping in scene.js.

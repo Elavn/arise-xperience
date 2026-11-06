@@ -83,7 +83,7 @@ export function initGolfMode(app) {
       guide = new THREE.Line(new THREE.BufferGeometry(),lineMat); guide.frustumCulled=false; guide.renderOrder=5; courseGroup.add(guide);
     }
     function loadHole() {
-      ball = newBall(COURSES[hole]); lastLie={...ball}; strokes=0; state='ready'; charge=false; drag=null; accumulator=0; swingTime=0;
+      ball = newBall(COURSES[hole]); lastLie={...ball}; strokes=0; state='ready'; charge=false; drag=null; accumulator=0; swingTime=0;cameraYaw=0;
       el('golf-banner').hidden=true; setPower(0.6); aimAtPin(); buildCourse(); hud();
     }
     function showResult() {
@@ -144,7 +144,13 @@ export function initGolfMode(app) {
         const forward=new THREE.Vector3().setFromMatrixColumn(camera.matrix,2);forward.y=0;forward.normalize();
         cameraPan.addScaledVector(right,-dx*.018*cameraZoom).addScaledVector(forward,-dy*.018*cameraZoom);
         cameraPan.clampLength(0,20);
-      }else{cameraYaw-=dx*.006;cameraPitch=THREE.MathUtils.clamp(cameraPitch+dy*.004,-.2,.9);}
+       }else{
+        // At address the camera, stance and shot guide share one heading.
+        // During a committed swing/roll, orbit only the view, never the shot.
+        if(state==='ready')angle+=dx*.006;
+        else cameraYaw-=dx*.006;
+        cameraPitch=THREE.MathUtils.clamp(cameraPitch+dy*.004,-.2,.9);
+      }
       drag.x=e.clientX;drag.y=e.clientY;
     });
     on(canvas,'pointerup',e=>{
@@ -170,7 +176,7 @@ export function initGolfMode(app) {
     const target=new THREE.Vector3(), eye=new THREE.Vector3();
     function cameraFrame(dt, instant=false) {
       const portrait=camera.aspect<0.8;
-      if(overview) { target.set(35,0,-9);eye.set(35,portrait?38:27,portrait?22:15); }
+      if(overview) { target.set(35,0,-9);const back=portrait?31:24;eye.set(35-Math.sin(angle)*back,portrait?38:27,-9+Math.cos(angle)*back); }
       else {
         // Low, behind-the-ball view, with the golfer on the left of frame.
         const dir=new THREE.Vector3(Math.sin(angle),0,-Math.cos(angle));
@@ -208,16 +214,16 @@ export function initGolfMode(app) {
         if(state==='rolling') {
           const result=stepBall(ball,COURSES[hole]);
           if(result==='cup'){showResult();break;}
-          if(result==='out'){strokes++;ball={...lastLie,vx:0,vz:0};state='ready';sound(130,0.2);hud('Outside the practice grounds. +1 penalty; back to your last position.');break;}
+          if(result==='out'){strokes++;ball={...lastLie,vx:0,vz:0};state='ready';angle-=cameraYaw;cameraYaw=0;sound(130,0.2);hud('Outside the practice grounds. +1 penalty; back to your last position.');break;}
           if(result==='bounce')sound(180,0.04);
-          if(!moving(ball)&&!ball.falling){state='ready';hud('Your turn. Adjust your aim and power.');}
+          if(!moving(ball)&&!ball.falling){state='ready';angle-=cameraYaw;cameraYaw=0;hud('Your turn. Adjust your aim and power.');}
         }
       }
       sphere.position.set(ball.x,ball.y??RADIUS,ball.z);
       sphere.visible=true;sphere.rotation.x+=ball.vz*dt/RADIUS;sphere.rotation.z-=ball.vx*dt/RADIUS;
       if(state==='rolling')el('golf-distance').textContent=`${Math.hypot(ball.x-COURSES[hole].pin[0],ball.z-COURSES[hole].pin[1]).toFixed(1)} m to pin`;
       updateGuide();cameraFrame(dt);
-      window.__GOLF__={state,hole:hole+1,strokes,ball:[ball.x,ball.z],power,scores:[...scores]};
+      window.__GOLF__={state,hole:hole+1,strokes,ball:[ball.x,ball.z],power,aim:angle,scores:[...scores]};
     });
     return ()=>{
       remove();listeners.forEach(fn=>fn());cancel();audio?.close();

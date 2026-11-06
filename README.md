@@ -55,7 +55,7 @@ npm run preview
 
 ## Golf controls
 
-Drag the scene to orbit the camera. Shift-drag or middle-drag pans; the wheel zooms. Camera gestures never change shot aim or power and never launch the ball. Use the aim arrows and power slider, then press Putt. Keyboard arrows adjust aim/power; hold Space and release to putt. Escape exits golf. View hole toggles the overhead camera.
+Drag horizontally while preparing a putt to rotate the camera, golfer stance and shot direction together. Vertical dragging tilts the view. Shift-drag or middle-drag pans without changing aim; the wheel zooms. Drag release never launches the ball. Once a swing is committed, orbiting only changes the view and cannot redirect the shot. Use the aim arrows and power slider, then press Putt. Keyboard arrows adjust aim/power; hold Space and release to putt. Escape exits golf. View hole toggles the overhead camera.
 
 The original grass and bunker remain visible during play. There is no raised course, boundary rail, artificial wall or lagoon. Balls cross the former course edges freely; rough grass and the existing sand slow them. Shots far outside the practice grounds incur a penalty and return to the previous lie.
 
