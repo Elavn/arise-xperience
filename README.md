@@ -67,6 +67,8 @@ The clubhouse roofs in `public/models/resort-architecture.glb` now follow the ae
 
 The golfer, ball and practice markers are a temporary gameplay layer removed on exit.
 
+Trees and shrubs are excluded from the actual road, sidewalk, court, path and stone pavilion surfaces, with clearance around their bases. Filtering happens after seeded generation, so the remaining plants retain their positions and appearance.
+
 Golf opens with a low player-side camera inspired by the supplied screenshot, with an original procedural Black golfer, putting stance, club wind-up and follow-through. This is a stylized mesh character, not a photoreal scanned person. View hole switches to an overhead camera.
 
 The home introduction eases out after 5.5 seconds or when exploring the canvas. Directional controls stay available. Info restores the introduction for nine seconds; it stays visible while its controls have keyboard focus. Reduced-motion preferences skip the fade transition. The previously added passport overlay has been removed.

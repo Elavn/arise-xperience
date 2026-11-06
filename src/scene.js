@@ -1,5 +1,6 @@
 import { createTurfTexture, turfUVs } from './turf.js';
 import { initQuietUI } from './quiet-ui.js';
+import { removeTreesOnHardscape } from './planting.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -173,6 +174,9 @@ const MAT = {
   white: new THREE.MeshStandardMaterial({ color: 0xe8e2cd, roughness: 0.75 }),
 };
 
+const hardscapeSurfaces = [];
+const hardscapeMaterials = new Set([MAT.road, MAT.paving, MAT.path, MAT.curb, MAT.stone]);
+
 function addBox(name, size, position, material, rotationY = 0, parent = scene) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
   mesh.name = name;
@@ -181,6 +185,7 @@ function addBox(name, size, position, material, rotationY = 0, parent = scene) {
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   parent.add(mesh);
+  if (hardscapeMaterials.has(material)) hardscapeSurfaces.push(mesh);
   return mesh;
 }
 
@@ -191,6 +196,7 @@ function addCylinder(name, radii, height, position, material, sides = 16, parent
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   parent.add(mesh);
+  if (hardscapeMaterials.has(material)) hardscapeSurfaces.push(mesh);
   return mesh;
 }
 
@@ -234,6 +240,7 @@ const court = new THREE.Mesh(new THREE.CircleGeometry(24, 64).rotateX(-Math.PI /
 court.position.set(0, 0.07, 2);
 court.receiveShadow = true;
 scene.add(court);
+hardscapeSurfaces.push(court);
 const clubhouseLawn = new THREE.Mesh(turfUVs(new THREE.RingGeometry(24.4, 30, 64)).rotateX(-Math.PI / 2), MAT.lawn);
 clubhouseLawn.position.set(0, 0.075, 2);
 clubhouseLawn.receiveShadow = true;
@@ -364,6 +371,11 @@ function buildPalms(points) {
   trunks.receiveShadow = true;
   fronds.castShadow = true;
   fronds.receiveShadow = true;
+  removeTreesOnHardscape([
+    { mesh: trunks, perTree: 1 },
+    { mesh: fronds, perTree: frondsPerTree },
+    { mesh: coconuts, perTree: 3 },
+  ], hardscapeSurfaces);
   scene.add(trunks, fronds, coconuts);
 }
 buildPalms(palmPositions);
@@ -390,6 +402,10 @@ for (let i = 0; i < distantCount; i += 1) {
   treeDummy.updateMatrix();
   distantCrowns.setMatrixAt(i, treeDummy.matrix);
 }
+removeTreesOnHardscape([
+  { mesh: distantTrunks, perTree: 1 },
+  { mesh: distantCrowns, perTree: 1 },
+], hardscapeSurfaces);
 scene.add(distantTrunks, distantCrowns);
 
 // Solar path lights, benches and low planting give the scene a human scale.
@@ -434,6 +450,7 @@ for (let i = 0; i < shrubCount; i += 1) {
   shrubs.setMatrixAt(i, treeDummy.matrix);
 }
 shrubs.castShadow = true;
+removeTreesOnHardscape([{ mesh: shrubs, perTree: 1 }], hardscapeSurfaces, 0.9);
 scene.add(shrubs);
 
 // Interface, camera choreography and accessible alternatives to canvas navigation.
