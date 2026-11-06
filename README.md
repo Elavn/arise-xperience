@@ -68,3 +68,9 @@ The original `public/models/resort-architecture.glb`, photo references, building
 Golf opens with a low player-side camera inspired by the supplied screenshot, with an original procedural Black golfer, putting stance, club wind-up and follow-through. This is a stylized mesh character, not a photoreal scanned person. View hole switches to an overhead camera.
 
 The home introduction eases out after 5.5 seconds or when exploring the canvas. Directional controls stay available. Info restores the introduction for nine seconds; it stays visible while its controls have keyboard focus. Reduced-motion preferences skip the fade transition. The previously added passport overlay has been removed.
+
+## Ball and cup
+
+The ball radius is 0.043 scene units, reduced from 0.18. The cup has a flush turf edge, a recessed liner and a bottom below the grass; temporary shader cutouts reveal its interior without changing the landscape geometry. Its radius is 0.108 and depth is 0.18 scene units. These are gameplay proportions, not surveyed measurements.
+
+Cup capture uses the time a putt spends over the opening and its lateral offset. Slow putts fall under gravity; fast crossings roll past, and glancing lip contacts can deflect. Scoring waits until the ball reaches the bottom. The model remains a lightweight approximation rather than a full rigid-body simulation. Tests cover drops, rollovers, lip-outs and misses outside the cup.
